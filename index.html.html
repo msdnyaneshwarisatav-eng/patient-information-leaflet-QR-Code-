@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Medicine Info QR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
+<script>
+/* Loads the three helper libraries. Each one tries jsDelivr first, then cdnjs. */
+window.__libsReady = (function(){
+  function load(urls){
+    return new Promise(function(resolve){
+      var i = 0;
+      (function next(){
+        if(i >= urls.length){ resolve(false); return; }
+        var s = document.createElement('script');
+        s.src = urls[i++];
+        s.onload = function(){ resolve(true); };
+        s.onerror = function(){ s.remove(); next(); };
+        document.head.appendChild(s);
+      })();
+    });
+  }
+  return Promise.all([
+    load(['https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js','https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js']),
+    load(['https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js','https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js']),
+    load(['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js'])
+  ]);
+})();
+</script>
+<style>
+:root{
+  --bg:#EDF3F8; --surface:#FFFFFF; --ink:#10263B; --muted:#4A6178; --line:#D2DFEA;
+  --blue:#1F5FD6; --blue-ink:#FFFFFF; --blue-soft:#E4EDFC;
+  --green:#12805C; --green-soft:#DDF3EA;
+  --amber:#8A5300; --amber-soft:#FFF0D6;
+  --red:#B42318; --red-soft:#FDE7E4;
+  --font-body:"Atkinson Hyperlegible","Noto Sans Devanagari","Nirmala UI","Mangal",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-head:"Bricolage Grotesque","Atkinson Hyperlegible","Noto Sans Devanagari","Nirmala UI","Mangal",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1824; --surface:#132434; --ink:#E9F1F8; --muted:#9FB4C7; --line:#254058;
+    --blue:#7FAAFF; --blue-ink:#0B1B33; --blue-soft:#1A3358;
+    --green:#4FD1A0; --green-soft:#12392E;
+    --amber:#F5B84B; --amber-soft:#3B2C0F;
+    --red:#FF8A7C; --red-soft:#3D1A17;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1824; --surface:#132434; --ink:#E9F1F8; --muted:#9FB4C7; --line:#254058;
+  --blue:#7FAAFF; --blue-ink:#0B1B33; --blue-soft:#1A3358;
+  --green:#4FD1A0; --green-soft:#12392E;
+  --amber:#F5B84B; --amber-soft:#3B2C0F;
+  --red:#FF8A7C; --red-soft:#3D1A17;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 var(--font-body);-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:var(--font-head);margin:0}
+p{margin:0}
+a{color:var(--blue)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px;top:8px;background:var(--surface);padding:8px 12px;border-radius:8px;z-index:9}
+.skip:focus{left:8px}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,40px);background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:40px;height:40px;flex:none}
+.brand strong{display:block;font:800 20px/1.1 var(--font-head)}
+.brand span{display:block;color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:999px;border:1px solid var(--line)}
+.tabs button{border:0;background:transparent;color:var(--muted);font:700 15px var(--font-body);padding:0 16px;min-height:42px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--blue);color:var(--blue-ink)}
+.public .tabs{display:none}
+
+main{max-width:1120px;margin:0 auto;padding:28px clamp(16px,4vw,40px) 64px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:700 16px var(--font-body);cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--blue)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--blue-ink)}
+.btn.small{min-height:38px;padding:0 14px;font-size:15px}
+.btn.danger{color:var(--red)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--blue);padding-left:4px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+
+/* dashboard */
+.intro{padding:8px 0 24px}
+.intro h1{font-weight:800;font-size:clamp(30px,5vw,46px);line-height:1.08;letter-spacing:-.02em;max-width:22ch}
+.intro p{color:var(--muted);font-size:19px;max-width:56ch;margin:14px 0 22px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin:0 0 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stats div{padding:16px 0 16px 18px;border-left:1px solid var(--line)}
+.stats div:first-child{border-left:0;padding-left:0}
+.stats dt{color:var(--muted);font-size:15px;order:2}
+.stats dd{margin:0;font:800 30px/1.1 var(--font-head)}
+.stats div{display:flex;flex-direction:column}
+.listhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.listhead h2{font-size:24px}
+.meds{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.med{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.med:last-child{border-bottom:0}
+.medinfo{min-width:0;flex:1 1 260px}
+.medinfo strong{display:block;font:700 19px/1.25 var(--font-head)}
+.medinfo .g{display:block;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:14px;color:var(--muted)}
+.meta .ok{color:var(--green);font-weight:700}
+.meta .no{color:var(--amber);font-weight:700}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.empty{padding:26px;background:var(--surface);border:1px dashed var(--line);border-radius:16px;color:var(--muted)}
+.hint{margin-top:10px;font-size:14px;color:var(--muted)}
+.warn{background:var(--amber-soft);color:var(--amber);padding:12px 14px;border-radius:12px;font-weight:700;font-size:15px;margin:0 0 16px}
+
+/* add view */
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,26px)}
+.panel>h2{font-size:24px;margin-bottom:16px}
+.out{position:sticky;top:16px}
+.drop{display:flex;gap:14px;align-items:center;padding:16px;border:2px dashed var(--blue);border-radius:14px;background:var(--blue-soft);cursor:pointer;margin-bottom:8px}
+.drop:focus-within,.drop.over{outline:3px solid var(--blue);outline-offset:2px}
+.drop svg{width:34px;height:34px;flex:none;color:var(--blue)}
+.drop small{display:block;color:var(--muted);font-size:14px;line-height:1.35}
+.note{font-size:14px;color:var(--muted);min-height:1.4em}
+.note.ok,.msg.ok{color:var(--green);font-weight:700}
+.note.warn{color:var(--amber);font-weight:700;background:none;padding:0;margin:0}
+.msg.warn{color:var(--amber);font-weight:700;background:none;padding:0;margin:12px 0 0}
+.field{margin:14px 0}
+.field label,.lab{display:block;font-weight:700;font-size:15px;margin-bottom:6px}
+input[type=text],textarea,select{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:400 16px/1.45 var(--font-body)}
+textarea{min-height:88px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.meter{margin:18px 0 6px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);border-radius:99px;transition:width .2s}
+.meter[data-s="dense"] .bar i{background:var(--amber)}
+.meter[data-s="heavy"] .bar i,.meter[data-s="over"] .bar i{background:var(--red)}
+.meter p{font-size:14px;color:var(--muted);margin-top:6px}
+.msg{min-height:1.5em;margin-top:12px;font-size:15px}
+
+.qrempty{aspect-ratio:1;max-width:340px;margin:0 auto 16px;border:2px dashed var(--line);border-radius:18px;display:grid;place-items:center;text-align:center;padding:24px;color:var(--muted)}
+.label{margin:0 0 16px;background:#fff;color:#10263B;border:2px dashed #10263B;border-radius:18px;padding:22px;text-align:center}
+.label h3{font:800 24px/1.15 var(--font-head)}
+.label .sub{color:#4A6178;margin-top:2px}
+.label img{display:block;width:100%;max-width:340px;height:auto;margin:14px auto;image-rendering:pixelated;background:#fff;transition:opacity .2s}
+.label .cta{font-weight:700;font-size:18px}
+.label .ver{color:#12805C;font-weight:700;font-size:15px;margin-top:4px}
+.stale{color:var(--amber);font-weight:700;font-size:15px;margin:0 0 12px}
+details.linkset{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+details.linkset summary{cursor:pointer;font-weight:700}
+details.linkset .field{margin-bottom:6px}
+
+/* scan */
+.seg{display:inline-flex;gap:4px;padding:4px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:var(--muted);font:700 15px var(--font-body);min-height:40px;padding:0 14px;border-radius:9px;cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1.5px var(--blue)}
+.camBox{position:relative;max-width:520px;margin:14px 0;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.camBox video{width:100%;height:100%;object-fit:cover;display:block}
+.camBox .frame{position:absolute;inset:18%;border:3px solid rgba(255,255,255,.92);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.28)}
+
+/* listen */
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,4vw,38px);margin-top:8px}
+.sheet h1{font-weight:800;font-size:clamp(28px,5vw,42px);line-height:1.1;letter-spacing:-.01em}
+.sheet .sub{font-size:19px;color:var(--muted);margin-top:6px}
+.badges{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:14px}
+.badge{display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border-radius:999px;font-weight:700;font-size:15px}
+.badge.ok{background:var(--green-soft);color:var(--green)}
+.badge.ok::before{content:"\2713"}
+.badge.no{background:var(--amber-soft);color:var(--amber)}
+.badge.no::before{content:"!"}
+.dateline{color:var(--muted);font-size:15px}
+.player{display:flex;flex-wrap:wrap;align-items:center;gap:18px 22px;margin:24px 0 12px;padding:18px;background:var(--blue-soft);border-radius:20px}
+.disc{position:relative;flex:none;width:96px;height:96px;border-radius:50%;border:0;background:var(--blue);color:var(--blue-ink);display:grid;place-items:center;cursor:pointer}
+.disc svg{width:44px;height:44px}
+.disc.on::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:3px solid var(--blue);animation:ring 1.6s ease-out infinite}
+@keyframes ring{from{transform:scale(.92);opacity:.6}to{transform:scale(1.15);opacity:0}}
+.pmeta{flex:1 1 200px;min-width:0}
+.pmeta strong{display:block;font:700 20px/1.25 var(--font-head)}
+.pmeta span{display:block;color:var(--muted);margin-top:2px}
+.wave{display:flex;gap:4px;height:24px;align-items:center;margin-top:8px}
+.wave i{display:block;width:5px;height:6px;border-radius:3px;background:var(--blue)}
+.playing .wave i{animation:bar 1s ease-in-out infinite}
+.playing .wave i:nth-child(2){animation-delay:.15s}
+.playing .wave i:nth-child(3){animation-delay:.3s}
+.playing .wave i:nth-child(4){animation-delay:.45s}
+.playing .wave i:nth-child(5){animation-delay:.6s}
+@keyframes bar{0%,100%{height:6px}50%{height:24px}}
+.pctl{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;margin-bottom:18px}
+.pctl .field{margin:0;min-width:180px}
+.pctl input[type=range]{width:100%;min-height:40px;accent-color:var(--blue)}
+.info{padding:14px 0 14px 18px;margin:0 0 6px;border-left:4px solid var(--line);border-radius:0 12px 12px 0;transition:background .2s,border-color .2s}
+.info h3{font-size:17px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.info p{font-size:20px;line-height:1.6;white-space:pre-line}
+.info.reading{border-left-color:var(--blue);background:var(--blue-soft)}
+.fine{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:15px}
+.pub{margin-top:18px;font-size:15px}
+
+.toastwrap{position:fixed;left:0;right:0;bottom:0;padding:0 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;pointer-events:none;z-index:20}
+.toast{background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:12px;font-weight:700;font-size:15px;max-width:520px;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:none}
+
+@media (max-width:860px){
+  .split{grid-template-columns:1fr}
+  .out{position:static}
+}
+@media (max-width:560px){
+  .two{grid-template-columns:1fr}
+  .stats dd{font-size:24px}
+  .tabs button{padding:0 12px;font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .wave i{height:14px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+      <g transform="rotate(-40 24 24)">
+        <rect x="5" y="14" width="38" height="20" rx="10" fill="var(--blue)"/>
+        <path d="M24 14h9a10 10 0 0 1 0 20h-9z" fill="var(--surface)" stroke="var(--blue)" stroke-width="3"/>
+      </g>
+    </svg>
+    <div><strong>Medicine Info QR</strong><span>Scan, read, listen</span></div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Main sections">
+    <button role="tab" data-view="dash" aria-selected="true">Dashboard</button>
+    <button role="tab" data-view="add" aria-selected="false">Add medicine</button>
+    <button role="tab" data-view="scan" aria-selected="false">Scan and listen</button>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- DASHBOARD -->
+  <section id="v-dash" class="view">
+    <div id="libWarn" class="warn" hidden>Some tools could not load. This page needs an internet connection to make and read QR codes. Reload the page when you are online.</div>
+    <div class="intro">
+      <h1>Medicine information that people can listen to</h1>
+      <p>Add verified tablet details, print the QR code on the pack, and anyone can scan it to read the information or hear it read aloud.</p>
+      <div class="row">
+        <button class="btn primary" data-go="add">Add a medicine</button>
+        <button class="btn" data-go="scan">Scan a QR code</button>
+      </div>
+    </div>
+
+    <dl class="stats">
+      <div><dt>Medicines saved</dt><dd id="st-meds">0</dd></div>
+      <div><dt>QR codes made</dt><dd id="st-qrs">0</dd></div>
+      <div><dt>Times listened</dt><dd id="st-listens">0</dd></div>
+    </dl>
+
+    <div class="listhead">
+      <h2>Saved medicines</h2>
+      <button class="btn small" id="btnSample">Load sample medicine</button>
+    </div>
+    <ul class="meds" id="medList"></ul>
+    <p class="empty" id="emptyMeds">No medicines saved yet. Add one, or load the sample medicine to try the whole flow.</p>
+    <p class="hint">Saved medicines stay on this device and browser only.</p>
+  </section>
+
+  <!-- ADD -->
+  <section id="v-add" class="view" hidden>
+    <div class="split">
+      <div class="panel">
+        <h2>Medicine information</h2>
+
+        <label class="drop" id="drop" for="fileIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+          <span><strong>Upload a leaflet file</strong> or drop it here
+            <small>.txt or .json. For PDF or Word, copy the text and paste it into the boxes below.</small></span>
+          <input class="sr" type="file" id="fileIn" accept=".txt,.md,.json,text/plain,application/json">
+        </label>
+        <p id="fileMsg" class="note" role="status"></p>
+
+        <div class="field"><label for="f-n">Medicine name</label><input type="text" id="f-n" autocomplete="off" placeholder="Example: Paracetamol 500 mg"></div>
+        <div class="field"><label for="f-g">Strength and form</label><input type="text" id="f-g" autocomplete="off" placeholder="Example: Tablet, 500 mg"></div>
+        <div class="field"><label for="f-u">What it is used for</label><textarea id="f-u"></textarea></div>
+        <div class="field"><label for="f-d">How to take it</label><textarea id="f-d"></textarea></div>
+        <div class="field"><label for="f-p">Precautions</label><textarea id="f-p"></textarea></div>
+        <div class="field"><label for="f-e">Side effects</label><textarea id="f-e"></textarea></div>
+        <div class="field"><label for="f-o">How to store it</label><textarea id="f-o"></textarea></div>
+        <div class="field"><label for="f-x">More information (optional)</label><textarea id="f-x"></textarea></div>
+        <div class="two">
+          <div class="field"><label for="f-v">Verified by (pharmacist name)</label><input type="text" id="f-v" autocomplete="off"></div>
+          <div class="field"><label for="f-l">Language of this information</label>
+            <select id="f-l"><option value="en">English</option><option value="hi">Hindi</option><option value="mr">Marathi</option></select>
+          </div>
+        </div>
+
+        <div class="meter" id="meter" data-s="">
+          <div class="bar"><i id="meterBar"></i></div>
+          <p id="meterTxt">The QR size will show here as you type.</p>
+        </div>
+
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" id="btnGen">Generate QR code</button>
+          <button class="btn" id="btnFillSample" type="button">Fill sample</button>
+          <button class="btn" id="btnClear" type="button">Clear form</button>
+        </div>
+        <p class="msg" id="formMsg" role="status"></p>
+      </div>
+
+      <aside class="panel out" aria-label="QR label">
+        <h2>QR label</h2>
+        <div id="qrEmpty" class="qrempty"><p>Your QR code will appear here after you press Generate QR code.</p></div>
+        <div id="qrWrap" hidden>
+          <figure class="label" id="labelFig">
+            <h3 id="lbName"></h3>
+            <p class="sub" id="lbSub"></p>
+            <img id="qrImg" alt="QR code for this medicine">
+            <p class="cta">Scan to read and listen</p>
+            <p class="ver" id="lbVer"></p>
+          </figure>
+          <p class="stale" id="staleNote" hidden>You changed the details. Generate the QR code again to update it.</p>
+          <div class="row">
+            <button class="btn primary" id="btnDlLabel">Download label</button>
+            <button class="btn" id="btnDlQr">Download QR only</button>
+            <button class="btn" id="btnTest">Test listening</button>
+          </div>
+          <p class="hint">Tip: if the download button does nothing, press and hold the QR image to save it.</p>
+        </div>
+        <details class="linkset" id="linkset">
+          <summary>QR link settings</summary>
+          <div class="field"><label for="f-link">Page address stored in the QR code</label><input type="text" id="f-link" autocomplete="off" inputmode="url"></div>
+          <p class="note" id="linkNote"></p>
+        </details>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SCAN -->
+  <section id="v-scan" class="view" hidden>
+    <div class="panel">
+      <h2>Scan a QR code</h2>
+      <div class="seg" role="tablist" aria-label="Scan method">
+        <button role="tab" data-sc="cam" aria-selected="true">Use camera</button>
+        <button role="tab" data-sc="up" aria-selected="false">Upload QR image</button>
+        <button role="tab" data-sc="paste" aria-selected="false">Paste link or text</button>
+      </div>
+
+      <div id="sc-cam">
+        <button class="btn primary" id="btnCam">Start camera</button>
+        <button class="btn" id="btnCamStop" hidden>Stop camera</button>
+        <div class="camBox" id="camBox" hidden><video id="cam" muted playsinline></video><div class="frame"></div></div>
+      </div>
+
+      <div id="sc-up" hidden>
+        <label class="drop" id="dropQr" for="qrFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v1M14 20h1M18 20h3v1"/></svg>
+          <span><strong>Choose a photo or screenshot of the QR code</strong> or drop it here
+            <small>A sharp, well-lit picture works best.</small></span>
+          <input class="sr" type="file" id="qrFile" accept="image/*">
+        </label>
+      </div>
+
+      <div id="sc-paste" hidden>
+        <div class="field"><label for="pasteIn">Link or text from the QR code</label><textarea id="pasteIn" placeholder="Paste the link here"></textarea></div>
+        <button class="btn primary" id="btnPaste">Open medicine info</button>
+      </div>
+
+      <p class="msg" id="scanMsg" role="status"></p>
+    </div>
+  </section>
+
+  <!-- LISTEN -->
+  <section id="v-listen" class="view" hidden>
+    <button class="btn ghost" id="btnBack">Back</button>
+    <article class="sheet">
+      <h1 id="lTitle"></h1>
+      <p class="sub" id="lSub"></p>
+      <div class="badges"><span class="badge" id="lVerified"></span><span class="dateline" id="lDate"></span></div>
+
+      <div class="player" id="player">
+        <button class="disc" id="btnPlay" aria-label="Listen"></button>
+        <div class="pmeta">
+          <strong id="pLabel">Listen to this medicine</strong>
+          <span id="pStatus" role="status"></span>
+          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <button class="btn small" id="btnStop">Stop</button>
+      </div>
+
+      <div class="pctl">
+        <div class="field"><label for="lLang">Voice language</label>
+          <select id="lLang"><option value="en">English</option><option value="hi">हिन्दी (Hindi)</option><option value="mr">मराठी (Marathi)</option></select>
+        </div>
+        <div class="field"><label for="rate">Speed: <span id="rateVal">0.9x</span></label>
+          <input type="range" id="rate" min="0.6" max="1.3" step="0.1" value="0.9">
+        </div>
+      </div>
+      <p class="warn" id="voiceNote" hidden></p>
+      <p class="note" id="lTransNote" role="status" hidden></p>
+
+      <div id="lSections"></div>
+      <p class="fine" id="lDisc"></p>
+    </article>
+    <p class="pub" id="pubLink" hidden><a href="#" id="toDash">Pharmacist? Open the dashboard</a></p>
+  </section>
+
+</main>
+
+<div class="toastwrap"><div class="toast" id="toast" role="status"></div></div>
+
+<script>
+window.__libsReady.then(function(){
+'use strict';
+
+/* ---------- small helpers ---------- */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+function el(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
+function btn(label, cls, fn){ const b = el('button', 'btn ' + (cls || ''), label); b.type = 'button'; if(fn) b.addEventListener('click', fn); return b; }
+const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let toastTimer = 0;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+function setMsg(id, text, kind){ const e = $(id); e.textContent = text || ''; e.className = e.className.replace(/\b(ok|warn)\b/g, '').trim(); if(kind) e.classList.add(kind); }
+function today(){ const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+function fmtDate(iso, lang){
+  try{
+    const d = new Date(iso + 'T00:00:00'); if(isNaN(d)) return iso;
+    return d.toLocaleDateString(lang === 'en' ? 'en-IN' : lang + '-IN', {day:'numeric', month:'short', year:'numeric'});
+  }catch(e){ return iso; }
+}
+function newId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function slug(s){ const t = (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); return t || 'medicine'; }
+
+/* ---------- storage (falls back to memory if the browser blocks it) ---------- */
+function load(k, fb){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }catch(e){ return fb; } }
+function persist(){ try{ localStorage.setItem('mediqr.meds', JSON.stringify(meds)); localStorage.setItem('mediqr.stats', JSON.stringify(stats)); }catch(e){} }
+let meds  = load('mediqr.meds', []);
+let stats = load('mediqr.stats', {qrs:0, listens:0});
+if(!Array.isArray(meds)) meds = [];
+if(!stats || typeof stats !== 'object') stats = {qrs:0, listens:0};
+
+/* ---------- languages and spoken text ---------- */
+const LANGS = { en:{tag:'en-IN', name:'English'}, hi:{tag:'hi-IN', name:'Hindi'}, mr:{tag:'mr-IN', name:'Marathi'} };
+const T = {
+  en:{
+    u:'What it is used for', d:'How to take it', p:'Precautions', e:'Side effects', o:'How to store it', x:'More information',
+    verified:n=>`Verified by ${n}`, unverified:'Verification not recorded', updated:d=>`Updated ${d}`,
+    spokenName:n=>`Medicine name: ${n}.`, spokenStrength:g=>`Strength and form: ${g}.`,
+    disclaimer:'This information is for awareness only. If you have any doubt, please ask your doctor or pharmacist.',
+    listen:'Listen to this medicine', idle:'Tap the big button to hear it read aloud.', reading:'Reading aloud…',
+    paused:'Paused. Tap the button to continue.', done:'Finished. Tap the button to listen again.'
+  },
+  hi:{
+    u:'यह किसलिए उपयोग होती है', d:'कैसे लें', p:'सावधानियां', e:'दुष्प्रभाव', o:'कैसे रखें', x:'अधिक जानकारी',
+    verified:n=>`${n} द्वारा सत्यापित`, unverified:'सत्यापन दर्ज नहीं है', updated:d=>`अपडेट: ${d}`,
+    spokenName:n=>`दवा का नाम: ${n}।`, spokenStrength:g=>`मात्रा और रूप: ${g}।`,
+    disclaimer:'यह जानकारी केवल जागरूकता के लिए है। कोई भी संदेह हो तो कृपया अपने डॉक्टर या फार्मासिस्ट से पूछें।',
+    listen:'इस दवा की जानकारी सुनें', idle:'सुनने के लिए बड़ा बटन दबाएं।', reading:'पढ़कर सुनाया जा रहा है…',
+    paused:'रुका हुआ है। जारी रखने के लिए बटन दबाएं।', done:'पूरा हुआ। फिर से सुनने के लिए बटन दबाएं।'
+  },
+  mr:{
+    u:'हे कशासाठी वापरतात', d:'कसे घ्यावे', p:'खबरदारी', e:'दुष्परिणाम', o:'कसे साठवावे', x:'अधिक माहिती',
+    verified:n=>`${n} यांनी पडताळणी केली`, unverified:'पडताळणी नोंदवलेली नाही', updated:d=>`अद्ययावत: ${d}`,
+    spokenName:n=>`औषधाचे नाव: ${n}.`, spokenStrength:g=>`प्रमाण आणि स्वरूप: ${g}.`,
+    disclaimer:'ही माहिती फक्त जागरूकतेसाठी आहे. काही शंका असल्यास कृपया आपल्या डॉक्टरांना किंवा फार्मासिस्टला विचारा.',
+    listen:'या औषधाची माहिती ऐका', idle:'ऐकण्यासाठी मोठे बटण दाबा.', reading:'वाचून दाखवत आहे…',
+    paused:'थांबवले आहे. पुढे चालू करण्यासाठी बटण दाबा.', done:'पूर्ण झाले. पुन्हा ऐकण्यासाठी बटण दाबा.'
+  }
+};
+const SECTION_KEYS = ['u','d','p','e','o','x'];
+function normLang(s){
+  s = String(s || '').toLowerCase().trim();
+  if(s === 'hi' || s === 'hindi' || s.startsWith('hi-')) return 'hi';
+  if(s === 'mr' || s === 'marathi' || s.startsWith('mr-')) return 'mr';
+  return 'en';
+}
+
+/* ---------- payload: medicine data <-> text stored in the QR ---------- */
+const KEYS = ['n','g','u','d','p','e','o','x','v','l','a'];
+function b64uEncode(bytes){
+  let s = ''; const CH = 0x8000;
+  for(let i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64uDecode(str){
+  str = str.replace(/-/g, '+').replace(/_/g, '/'); while(str.length % 4) str += '=';
+  const bin = atob(str), out = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function encodeMed(med){
+  const o = {}; KEYS.forEach(k => { if(med[k]) o[k] = med[k]; });
+  const bytes = new TextEncoder().encode(JSON.stringify(o));
+  if(window.pako) return 'z' + b64uEncode(window.pako.deflate(bytes, {level:9}));
+  return 'j' + b64uEncode(bytes);
+}
+function sanitize(o){
+  const out = {};
+  ['n','g','u','d','p','e','o','x','v','a'].forEach(k => { out[k] = (o && typeof o[k] === 'string') ? o[k].slice(0, 4000) : ''; });
+  out.l = (o && typeof o.l === 'string' && has(LANGS, o.l)) ? o.l : 'en';
+  if(!out.n) throw new Error('empty');
+  return out;
+}
+function decodeMed(code){
+  const type = code.charAt(0); let bytes = b64uDecode(code.slice(1));
+  if(type === 'z'){ if(!window.pako) throw new Error('lib'); bytes = window.pako.inflate(bytes); }
+  else if(type !== 'j') throw new Error('format');
+  return sanitize(JSON.parse(new TextDecoder().decode(bytes)));
+}
+function extractCode(text){
+  text = String(text || '').trim();
+  let m = text.match(/#m=([A-Za-z0-9_\-]+)/); if(m) return m[1];
+  m = text.match(/^MEDQR:([A-Za-z0-9_\-]+)$/); if(m) return m[1];
+  return null;
+}
+
+/* ---------- QR drawing ---------- */
+function qrTextFor(med){
+  const code = encodeMed(med), base = ($('#f-link').value || '').trim();
+  if(/^https?:\/\//i.test(base)) return base.split('#')[0] + '#m=' + code;
+  return 'MEDQR:' + code;
+}
+function makeQR(text){
+  if(typeof window.qrcode !== 'function') return null;
+  const levels = text.length <= 600 ? ['Q','M','L'] : text.length <= 1200 ? ['M','L'] : ['L'];
+  for(const lv of levels){
+    try{ const q = window.qrcode(0, lv); q.addData(text); q.make(); return q; }catch(e){}
+  }
+  return null;
+}
+function drawQR(qr, targetPx, canvas){
+  const n = qr.getModuleCount(), quiet = 4, total = n + quiet * 2;
+  const scale = Math.max(2, Math.floor(targetPx / total));
+  canvas.width = canvas.height = total * scale;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
+  for(let r = 0; r < n; r++) for(let c = 0; c < n; c++) if(qr.isDark(r, c)) ctx.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
+}
+function wrapLines(ctx, text, maxW){
+  const words = text.split(/\s+/), lines = []; let line = '';
+  for(const w of words){
+    const t = line ? line + ' ' + w : w;
+    if(ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t;
+  }
+  if(line) lines.push(line);
+  return lines.slice(0, 3);
+}
+function buildLabelCanvas(med, qr){
+  const W = 900, pad = 70, maxW = W - pad * 2;
+  const headFont = '800 54px "Bricolage Grotesque", Arial, sans-serif';
+  const subFont  = '400 32px "Atkinson Hyperlegible", Arial, sans-serif';
+  const ctxM = document.createElement('canvas').getContext('2d');
+  ctxM.font = headFont; const nameLines = wrapLines(ctxM, med.n, maxW);
+  ctxM.font = subFont;  const subLines = med.g ? wrapLines(ctxM, med.g, maxW) : [];
+  const n = qr.getModuleCount(), total = n + 8, scale = Math.max(2, Math.floor(680 / total)), qrPx = total * scale;
+  const H = 64 + nameLines.length * 66 + (subLines.length ? subLines.length * 42 + 6 : 0) + 18 + qrPx + 10 + 60 + (med.v ? 44 : 0) + 40;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#10263B'; ctx.lineWidth = 4; ctx.setLineDash([16, 12]); ctx.strokeRect(16, 16, W - 32, H - 32); ctx.setLineDash([]);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#10263B';
+  let y = 64;
+  ctx.font = headFont; nameLines.forEach(l => { ctx.fillText(l, W / 2, y + 44); y += 66; });
+  if(subLines.length){ ctx.font = subFont; ctx.fillStyle = '#4A6178'; subLines.forEach(l => { ctx.fillText(l, W / 2, y + 30); y += 42; }); ctx.fillStyle = '#10263B'; y += 6; }
+  y += 18;
+  const tmp = document.createElement('canvas'); drawQR(qr, 680, tmp);
+  ctx.drawImage(tmp, (W - tmp.width) / 2, y); y += tmp.width + 10;
+  ctx.font = '800 40px "Bricolage Grotesque", Arial, sans-serif'; ctx.fillStyle = '#10263B';
+  ctx.fillText('Scan to read and listen', W / 2, y + 40); y += 60;
+  if(med.v){ ctx.font = subFont; ctx.fillStyle = '#12805C'; ctx.fillText('Verified by ' + med.v, W / 2, y + 28); }
+  return c;
+}
+function toBlob(canvas){ return new Promise(res => canvas.toBlob(res, 'image/png')); }
+async function saveBlob(filename, blob){
+  let dl = null;
+  try{ dl = (window.claude && typeof window.claude.use === 'function') ? await window.claude.use('downloads') : null; }catch(e){ dl = null; }
+  if(dl){
+    try{ await dl.save({filename, data: blob}); toast('Saved'); }
+    catch(e){ if(!e || e.code !== 'declined') toast('Could not save. Press and hold the QR image to save it instead.'); }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ---------- navigation ---------- */
+let current = 'dash', prevView = 'dash';
+function go(name){
+  if(name !== 'scan') stopCamera();
+  if(name !== 'listen') stopSpeech();
+  $$('.view').forEach(v => { v.hidden = (v.id !== 'v-' + name); });
+  $$('.tabs [role="tab"]').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === name)));
+  current = name; window.scrollTo(0, 0);
+}
+$$('.tabs [role="tab"]').forEach(t => t.addEventListener('click', () => go(t.dataset.view)));
+$$('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+$('#btnBack').addEventListener('click', () => go(prevView || 'dash'));
+$('#toDash').addEventListener('click', e => {
+  e.preventDefault();
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(_){}
+  document.body.classList.remove('public'); go('dash');
+});
+
+/* ---------- dashboard ---------- */
+function renderDash(){
+  $('#st-meds').textContent = meds.length.toLocaleString();
+  $('#st-qrs').textContent = (stats.qrs || 0).toLocaleString();
+  $('#st-listens').textContent = (stats.listens || 0).toLocaleString();
+  const ul = $('#medList'); ul.textContent = '';
+  ul.hidden = meds.length === 0; $('#emptyMeds').hidden = meds.length > 0;
+  meds.forEach(m => {
+    const li = el('li', 'med');
+    const info = el('div', 'medinfo');
+    info.appendChild(el('strong', '', m.n));
+    if(m.g) info.appendChild(el('span', 'g', m.g));
+    const meta = el('div', 'meta');
+    meta.appendChild(el('span', '', LANGS[m.l] ? LANGS[m.l].name : 'English'));
+    meta.appendChild(el('span', m.v ? 'ok' : 'no', m.v ? 'Verified by ' + m.v : 'Not verified'));
+    if(m.a) meta.appendChild(el('span', '', 'Updated ' + fmtDate(m.a, 'en')));
+    info.appendChild(meta);
+    const acts = el('div', 'acts');
+    acts.appendChild(btn('Show QR', 'small', () => openInAdd(m)));
+    acts.appendChild(btn('Listen', 'small', () => showListen(m)));
+    const del = btn('Delete', 'small danger');
+    del.addEventListener('click', () => {
+      if(del.dataset.arm){ meds = meds.filter(x => x.id !== m.id); persist(); if(editingId === m.id){ editingId = null; resetOutput(); } renderDash(); toast('Deleted'); return; }
+      del.dataset.arm = '1'; del.textContent = 'Tap again to delete';
+      setTimeout(() => { del.dataset.arm = ''; del.textContent = 'Delete'; }, 3000);
+    });
+    acts.appendChild(del);
+    li.appendChild(info); li.appendChild(acts); ul.appendChild(li);
+  });
+}
+
+/* ---------- add medicine form ---------- */
+const FIELD_ID = {n:'f-n', g:'f-g', u:'f-u', d:'f-d', p:'f-p', e:'f-e', o:'f-o', x:'f-x', v:'f-v', l:'f-l'};
+let editingId = null, lastQR = null, dirty = false, meterTimer = 0;
+
+const SAMPLE = {
+  n:'Paracetamol 500 mg', g:'Tablet, 500 mg',
+  u:'Relieves mild to moderate pain such as headache, toothache and body ache. It also brings down fever.',
+  d:'Adults: take one to two tablets with water every 4 to 6 hours, only when needed. Do not take more than 8 tablets in 24 hours. Swallow the tablet whole.',
+  p:'Do not take other medicines that also contain paracetamol. Do not drink alcohol while taking this medicine. Ask your doctor first if you have liver or kidney problems, or if you are pregnant. See a doctor if the fever lasts more than 3 days.',
+  e:'Side effects are rare. Stop the medicine and get medical help if you get a skin rash, swelling of the face, or difficulty breathing. Taking too much can seriously harm the liver.',
+  o:'Store below 30 degrees Celsius in a dry place, away from sunlight. Keep out of the reach of children.',
+  x:'Sample text for demonstration only. Replace it with information checked by a pharmacist.',
+  v:'', l:'en'
+};
+
+function fillForm(m){
+  Object.keys(FIELD_ID).forEach(k => { $('#' + FIELD_ID[k]).value = (m && m[k]) ? m[k] : (k === 'l' ? 'en' : ''); });
+}
+function readForm(){
+  const m = {};
+  Object.keys(FIELD_ID).forEach(k => { m[k] = $('#' + FIELD_ID[k]).value.trim(); });
+  m.l = normLang(m.l); m.a = today(); m.id = editingId;
+  return m;
+}
+const hasDetail = m => ['g','u','d','p','e','o','x'].some(k => m[k]);
+
+function resetOutput(){
+  lastQR = null; dirty = false;
+  $('#qrWrap').hidden = true; $('#qrEmpty').hidden = false;
+}
+function setDirty(flag){
+  dirty = flag;
+  if(!lastQR) return;
+  $('#qrImg').style.opacity = flag ? '.3' : '1';
+  $('#staleNote').hidden = !flag;
+  $('#btnDlLabel').disabled = flag; $('#btnDlQr').disabled = flag; $('#btnTest').disabled = flag;
+}
+function renderQR(med, qr){
+  const text = qrTextFor(med);
+  qr = qr || makeQR(text);
+  if(!qr){ resetOutput(); setMsg('#formMsg', 'This text is too long for one QR code. Shorten it and try again.', 'warn'); return; }
+  const cv = document.createElement('canvas'); drawQR(qr, 900, cv);
+  $('#qrImg').src = cv.toDataURL('image/png');
+  $('#lbName').textContent = med.n; $('#lbSub').textContent = med.g || '';
+  $('#lbVer').textContent = med.v ? 'Verified by ' + med.v : '';
+  lastQR = {med, qr, canvas: cv};
+  $('#qrEmpty').hidden = true; $('#qrWrap').hidden = false; setDirty(false);
+}
+function generate(){
+  const med = readForm();
+  if(!med.n){ setMsg('#formMsg', 'Enter the medicine name first.', 'warn'); $('#f-n').focus(); return; }
+  if(!hasDetail(med)){ setMsg('#formMsg', 'Add at least one detail, such as what it is used for or how to take it.', 'warn'); $('#f-u').focus(); return; }
+  if(typeof window.qrcode !== 'function'){ setMsg('#formMsg', 'The QR tool could not load. Check your internet connection and reload the page.', 'warn'); return; }
+  const qr = makeQR(qrTextFor(med));
+  if(!qr){ setMsg('#formMsg', 'This text is too long for one QR code. Shorten it and try again.', 'warn'); return; }
+  med.id = editingId || newId(); editingId = med.id;
+  const i = meds.findIndex(x => x.id === med.id);
+  if(i >= 0) meds[i] = med; else meds.unshift(med);
+  stats.qrs = (stats.qrs || 0) + 1; persist(); renderDash();
+  renderQR(med, qr);
+  setMsg('#formMsg', 'QR code ready and saved. Download it, then print it on the pack.', 'ok');
+}
+function openInAdd(m){
+  editingId = m.id; fillForm(m); go('add'); setMsg('#formMsg', ''); setMsg('#fileMsg', '');
+  renderQR(m); updateMeter();
+}
+function updateMeter(){
+  const med = readForm(), meter = $('#meter'), txt = $('#meterTxt'), bar = $('#meterBar');
+  if(!med.n && !hasDetail(med)){ meter.dataset.s = ''; bar.style.width = '0'; txt.textContent = 'The QR size will show here as you type.'; $('#btnGen').disabled = false; return; }
+  const text = qrTextFor(med), len = text.length, qr = makeQR(text);
+  bar.style.width = Math.min(100, len / 2900 * 100) + '%';
+  const nice = len.toLocaleString();
+  if(typeof window.qrcode !== 'function'){ meter.dataset.s = ''; txt.textContent = 'The QR tool has not loaded yet.'; return; }
+  if(!qr){ meter.dataset.s = 'over'; txt.textContent = `Too long for one QR code (${nice} characters, the limit is about 2,900). Shorten the text.`; $('#btnGen').disabled = true; return; }
+  $('#btnGen').disabled = false;
+  if(len <= 1000){ meter.dataset.s = 'ok'; txt.textContent = `Good size (${nice} characters). Easy to scan from a small label.`; }
+  else if(len <= 1800){ meter.dataset.s = 'dense'; txt.textContent = `Large QR (${nice} characters). Print it at least 4 cm wide.`; }
+  else { meter.dataset.s = 'heavy'; txt.textContent = `Very dense QR (${nice} characters). Print it large, or shorten the text.`; }
+}
+function onFormChange(){
+  if(lastQR && !dirty) setDirty(true);
+  clearTimeout(meterTimer); meterTimer = setTimeout(updateMeter, 200);
+}
+$$('#v-add input[type="text"], #v-add textarea, #v-add select').forEach(i => i.addEventListener('input', onFormChange));
+$('#f-l').addEventListener('change', onFormChange);
+$('#btnGen').addEventListener('click', generate);
+$('#btnClear').addEventListener('click', () => { editingId = null; fillForm({}); resetOutput(); setMsg('#formMsg', ''); setMsg('#fileMsg', ''); updateMeter(); });
+function fillSample(){ editingId = null; fillForm(SAMPLE); resetOutput(); setMsg('#formMsg', 'Sample loaded. Press Generate QR code.', 'ok'); setMsg('#fileMsg', ''); updateMeter(); }
+$('#btnFillSample').addEventListener('click', fillSample);
+$('#btnSample').addEventListener('click', () => { go('add'); fillSample(); });
+
+/* link settings */
+const autoBase = /^https?:$/.test(location.protocol) ? location.href.split('#')[0] : '';
+$('#f-link').value = autoBase;
+function updateLinkNote(){
+  const v = $('#f-link').value.trim();
+  $('#linkNote').textContent = /^https?:\/\//i.test(v)
+    ? 'A phone camera that scans the QR will open this page and show the medicine info. The page must be reachable online.'
+    : 'No web address set, so the QR holds the medicine info itself. It works with the Scan tab of this app, not with a phone\u2019s normal camera.';
+}
+$('#f-link').addEventListener('input', () => { updateLinkNote(); onFormChange(); });
+updateLinkNote();
+
+/* downloads and test */
+$('#btnDlLabel').addEventListener('click', async () => {
+  if(!lastQR) return;
+  const blob = await toBlob(buildLabelCanvas(lastQR.med, lastQR.qr));
+  saveBlob(slug(lastQR.med.n) + '-qr-label.png', blob);
+});
+$('#btnDlQr').addEventListener('click', async () => {
+  if(!lastQR) return;
+  const blob = await toBlob(lastQR.canvas);
+  saveBlob(slug(lastQR.med.n) + '-qr.png', blob);
+});
+$('#btnTest').addEventListener('click', () => { if(lastQR) showListen(lastQR.med); });
+
+/* ---------- reading a leaflet file ---------- */
+const HEAD = {
+  n:['medicine name','tablet name','drug name','brand name','name','medicine'],
+  g:['strength and form','strength','form','composition','generic name','strength / form'],
+  u:['uses','use','used for','what it is used for','indications','indication'],
+  d:['dosage','dose','how to take','how to take it','directions','how to use','dosage and administration'],
+  p:['precautions','precaution','warnings','warning','cautions','before you take'],
+  e:['side effects','side effect','adverse effects','possible side effects'],
+  o:['storage','how to store','how to store it','store'],
+  x:['more information','additional information','notes','other information','description'],
+  v:['verified by','pharmacist','checked by']
+};
+function headKey(label){
+  const l = label.trim().toLowerCase().replace(/\s+/g, ' ');
+  for(const k in HEAD) if(HEAD[k].indexOf(l) >= 0) return k;
+  return null;
+}
+function parseLeaflet(text){
+  const out = {}, free = []; let cur = null, found = 0;
+  text.replace(/\r/g, '').split('\n').forEach(raw => {
+    const m = raw.match(/^\s*(?:#+\s*)?\**([A-Za-z][A-Za-z \/]{1,32}?)\**\s*:\s*(.*)$/);
+    const k = m ? headKey(m[1]) : null;
+    if(k){ cur = k; found++; out[k] = (out[k] ? out[k] + '\n' : '') + m[2].replace(/^\**\s*/, '').trim(); }
+    else if(cur){ out[cur] += '\n' + raw.trim(); }
+    else free.push(raw);
+  });
+  Object.keys(out).forEach(k => { out[k] = out[k].replace(/\n{3,}/g, '\n\n').trim(); });
+  return {fields: out, found, free: free.join('\n').trim()};
+}
+function fromJson(o){
+  if(Array.isArray(o)) o = o[0];
+  if(!o || typeof o !== 'object') return {};
+  const g = (...ks) => { for(const k of ks) if(typeof o[k] === 'string') return o[k]; return ''; };
+  return {n:g('name','medicine','medicineName','n'), g:g('strength','form','g'), u:g('uses','use','u'), d:g('dosage','dose','howToTake','d'),
+    p:g('precautions','warnings','p'), e:g('sideEffects','side_effects','e'), o:g('storage','o'), x:g('notes','extra','moreInformation','x'),
+    v:g('verifiedBy','verified_by','v'), l:normLang(g('language','lang','l'))};
+}
+function handleLeaflet(file){
+  if(!file) return;
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const ok = ['txt','md','json','text'].indexOf(ext) >= 0 || (file.type || '').indexOf('text/') === 0 || file.type === 'application/json';
+  if(!ok){ setMsg('#fileMsg', 'Only .txt and .json files can be read here. For PDF or Word, copy the text and paste it into the boxes below.', 'warn'); return; }
+  if(file.size > 300 * 1024){ setMsg('#fileMsg', 'That file is too large. Use a file under 300 KB.', 'warn'); return; }
+  const fr = new FileReader();
+  fr.onerror = () => setMsg('#fileMsg', 'Could not read that file. Try another one.', 'warn');
+  fr.onload = () => {
+    const text = String(fr.result || ''); let fields = {}, note = '';
+    try{
+      if(ext === 'json'){ fields = fromJson(JSON.parse(text)); note = 'Loaded from ' + file.name + '. Check the details, then generate the QR code.'; }
+      else{
+        const r = parseLeaflet(text); fields = r.fields;
+        if(r.found === 0){
+          const lines = text.trim().split(/\n+/);
+          if(lines[0] && lines[0].length <= 80){ fields.n = lines[0].trim(); fields.x = lines.slice(1).join('\n').trim(); }
+          else fields.x = text.trim();
+          note = 'No headings such as "Uses:" or "Dosage:" were found, so the text was placed under More information. Check the name and move the text into the right boxes.';
+        } else {
+          if(r.free){
+            const fl = r.free.split(/\n+/).filter(Boolean);
+            if(!fields.n && fl[0] && fl[0].length <= 80){ fields.n = fl[0].trim(); if(fl.length > 1) fields.x = (fl.slice(1).join('\n') + (fields.x ? '\n' + fields.x : '')).trim(); }
+            else fields.x = (r.free + (fields.x ? '\n' + fields.x : '')).trim();
+          }
+          note = 'Loaded ' + r.found + ' section' + (r.found === 1 ? '' : 's') + ' from ' + file.name + '. Check the details, then generate the QR code.';
+        }
+      }
+    }catch(e){ setMsg('#fileMsg', 'This file could not be understood. Check that it is valid text or JSON.', 'warn'); return; }
+    editingId = null; fillForm(fields); resetOutput(); setMsg('#formMsg', ''); setMsg('#fileMsg', note, 'ok'); updateMeter();
+  };
+  fr.readAsText(file);
+}
+$('#fileIn').addEventListener('change', e => { handleLeaflet(e.target.files[0]); e.target.value = ''; });
+function dropZone(id, fn){
+  const z = $(id);
+  ['dragenter','dragover'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => z.addEventListener(ev, e => { e.preventDefault(); z.classList.remove('over'); }));
+  z.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) fn(f); });
+}
+dropZone('#drop', handleLeaflet);
+
+/* ---------- scanning ---------- */
+let camStream = null, camRAF = 0, lastBad = 0;
+const cam = $('#cam'), scanCv = document.createElement('canvas'), scanCtx = scanCv.getContext('2d', {willReadFrequently:true});
+function scanMsg(t, kind){ setMsg('#scanMsg', t, kind); }
+$$('[data-sc]').forEach(b => b.addEventListener('click', () => {
+  $$('[data-sc]').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  ['cam','up','paste'].forEach(k => { $('#sc-' + k).hidden = (k !== b.dataset.sc); });
+  if(b.dataset.sc !== 'cam') stopCamera();
+  scanMsg('');
+}));
+function stopCamera(){
+  cancelAnimationFrame(camRAF); camRAF = 0;
+  if(camStream){ camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  try{ cam.srcObject = null; }catch(e){}
+  $('#camBox').hidden = true; $('#btnCamStop').hidden = true; $('#btnCam').hidden = false;
+}
+async function startCamera(){
+  stopCamera();
+  if(typeof window.jsQR !== 'function'){ scanMsg('The scanner tool could not load. Check your internet connection and reload the page.', 'warn'); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ scanMsg('The camera is not available here. Use Upload QR image instead.', 'warn'); return; }
+  scanMsg('Starting the camera…');
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1280}}, audio:false});
+    cam.srcObject = camStream; await cam.play();
+    $('#camBox').hidden = false; $('#btnCam').hidden = true; $('#btnCamStop').hidden = false;
+    scanMsg('Point the camera at the QR code and hold steady.');
+    tick();
+  }catch(e){
+    stopCamera();
+    scanMsg((e && e.name === 'NotAllowedError') ? 'Camera permission was blocked. Allow the camera, or use Upload QR image instead.' : 'The camera could not start here. Use Upload QR image instead.', 'warn');
+  }
+}
+function tick(){
+  if(!camStream) return;
+  if(cam.readyState >= 2 && cam.videoWidth){
+    const s = Math.min(1, 1000 / Math.max(cam.videoWidth, cam.videoHeight));
+    const w = Math.round(cam.videoWidth * s), h = Math.round(cam.videoHeight * s);
+    scanCv.width = w; scanCv.height = h; scanCtx.drawImage(cam, 0, 0, w, h);
+    const d = scanCtx.getImageData(0, 0, w, h), r = window.jsQR(d.data, w, h, {inversionAttempts:'dontInvert'});
+    if(r && r.data){
+      const now = Date.now();
+      if(now - lastBad > 1800){ if(handleScanned(r.data)) return; lastBad = now; }
+    }
+  }
+  camRAF = requestAnimationFrame(tick);
+}
+$('#btnCam').addEventListener('click', startCamera);
+$('#btnCamStop').addEventListener('click', () => { stopCamera(); scanMsg(''); });
+
+function handleScanned(text){
+  const code = extractCode(text);
+  if(!code){ scanMsg('This QR code is not a Medicine Info QR.', 'warn'); return false; }
+  try{ const med = decodeMed(code); stopCamera(); scanMsg(''); showListen(med); return true; }
+  catch(e){
+    scanMsg(e && e.message === 'lib' ? 'The decoder could not load. Check your internet connection and try again.' : 'This QR code looks damaged or incomplete. Try again with a clearer picture.', 'warn');
+    return false;
+  }
+}
+function scanImageFile(file){
+  if(!file) return;
+  if(typeof window.jsQR !== 'function'){ scanMsg('The scanner tool could not load. Check your internet connection and reload the page.', 'warn'); return; }
+  if(!file.type || file.type.indexOf('image/') !== 0){ scanMsg('Please choose an image file.', 'warn'); return; }
+  const fr = new FileReader();
+  fr.onerror = () => scanMsg('Could not read that image.', 'warn');
+  fr.onload = () => {
+    const img = new Image();
+    img.onerror = () => scanMsg('Could not open that image.', 'warn');
+    img.onload = () => {
+      let res = null;
+      for(const factor of [1, 0.5, 0.75]){
+        const s = Math.min(1, 2000 / Math.max(img.naturalWidth, img.naturalHeight)) * factor;
+        const w = Math.max(1, Math.round(img.naturalWidth * s)), h = Math.max(1, Math.round(img.naturalHeight * s));
+        scanCv.width = w; scanCv.height = h; scanCtx.fillStyle = '#fff'; scanCtx.fillRect(0, 0, w, h); scanCtx.drawImage(img, 0, 0, w, h);
+        const d = scanCtx.getImageData(0, 0, w, h);
+        res = window.jsQR(d.data, w, h, {inversionAttempts:'attemptBoth'});
+        if(res) break;
+      }
+      if(!res){ scanMsg('No QR code found in that picture. Try a sharper, well-lit image.', 'warn'); return; }
+      handleScanned(res.data);
+    };
+    img.src = String(fr.result);
+  };
+  fr.readAsDataURL(file);
+}
+$('#qrFile').addEventListener('change', e => { scanImageFile(e.target.files[0]); e.target.value = ''; });
+dropZone('#dropQr', scanImageFile);
+$('#btnPaste').addEventListener('click', () => {
+  const v = $('#pasteIn').value.trim();
+  if(!v){ scanMsg('Paste the link or text first.', 'warn'); return; }
+  handleScanned(v);
+});
+
+/* ---------- listen page and audio ---------- */
+const PLAY_SVG  = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+const PAUSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>';
+const synth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+let listenMed = null, listenFields = null, chunks = [], idx = 0, state = 'idle', token = 0, renderToken = 0, finished = false, rate = 0.9, voices = [];
+
+function refreshVoices(){ if(synth){ voices = synth.getVoices() || []; updateVoiceNote(); } }
+if(synth){ refreshVoices(); synth.onvoiceschanged = refreshVoices; }
+function pickVoice(lang){
+  const tag = LANGS[lang].tag.toLowerCase(), base = tag.split('-')[0];
+  const norm = v => (v.lang || '').toLowerCase().replace('_', '-');
+  return voices.find(v => norm(v) === tag) || voices.find(v => norm(v).indexOf(base) === 0) || null;
+}
+function updateVoiceNote(){
+  const note = $('#voiceNote');
+  if(!synth){ note.hidden = false; note.textContent = 'This browser cannot read aloud. Try Chrome, Edge or Safari.'; return; }
+  const lang = $('#lLang').value;
+  if(voices.length && !pickVoice(lang)){
+    note.hidden = false;
+    note.textContent = `This device has no ${LANGS[lang].name} voice installed, so the audio may sound wrong. Add one in the device's text-to-speech settings, or try Chrome or Edge.`;
+  } else note.hidden = true;
+}
+function splitText(t){
+  const parts = [];
+  String(t).replace(/\r/g, '').split(/\n+/).forEach(line => {
+    (line.match(/.+?(?:[.!?\u0964](?=\s|$)|$)/g) || []).forEach(s => { s = s.trim(); if(s) parts.push(s); });
+  });
+  const out = []; let cur = '';
+  parts.forEach(p => { if(cur && (cur + ' ' + p).length > 180){ out.push(cur); cur = p; } else cur = cur ? cur + ' ' + p : p; });
+  if(cur) out.push(cur);
+  return out;
+}
+/* ---------- auto-translation (MyMemory, no key needed) ---------- */
+const TR_TEXT_CACHE = new Map();  // 'srcLang>tgtLang::text' -> translated text
+const TR_FIELD_CACHE = new Map(); // 'medKey::lang' -> translated field object
+function medKey(med){ return [med.id || '', med.n, med.a || '', med.l].join('|'); }
+async function mmTranslateChunk(text, srcLang, tgtLang){
+  const cacheKey = srcLang + '>' + tgtLang + '::' + text;
+  if(TR_TEXT_CACHE.has(cacheKey)) return TR_TEXT_CACHE.get(cacheKey);
+  const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + srcLang + '|' + tgtLang;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('http');
+  const data = await res.json();
+  const out = data && data.responseData && data.responseData.translatedText;
+  if(!out || /^(PLEASE SELECT|INVALID)/i.test(out)) throw new Error('bad');
+  TR_TEXT_CACHE.set(cacheKey, out);
+  return out;
+}
+async function mmTranslateText(text, srcLang, tgtLang){
+  // MyMemory limits each request to ~500 chars, so long fields are split into sentence groups first.
+  const groups = []; let cur = '';
+  splitText(text).forEach(s => { if(cur && (cur + ' ' + s).length > 450){ groups.push(cur); cur = s; } else cur = cur ? cur + ' ' + s : s; });
+  if(cur) groups.push(cur);
+  const parts = [];
+  for(const g of groups) parts.push(await mmTranslateChunk(g, srcLang, tgtLang));
+  return parts.join(' ');
+}
+async function getDisplayFields(med, lang){
+  if(lang === med.l) return med;
+  const mk = medKey(med) + '::' + lang;
+  if(TR_FIELD_CACHE.has(mk)) return TR_FIELD_CACHE.get(mk);
+  const out = Object.assign({}, med);
+  for(const k of ['g','u','d','p','e','o','x']) if(med[k]) out[k] = await mmTranslateText(med[k], med.l, lang);
+  TR_FIELD_CACHE.set(mk, out);
+  return out;
+}
+function buildChunks(fields, lang){
+  const t = T[lang], out = [];
+  const push = (k, txt) => splitText(txt).forEach(s => out.push({k, text:s}));
+  push('head', t.spokenName(listenMed.n));
+  if(fields.g) push('head', t.spokenStrength(fields.g));
+  SECTION_KEYS.forEach(k => { if(fields[k]){ out.push({k, text: t[k] + '.'}); push(k, fields[k]); } });
+  if(listenMed.v) push('end', t.verified(listenMed.v) + '.');
+  push('end', t.disclaimer);
+  return out;
+}
+function highlight(k){
+  $$('#lSections .info').forEach(e => {
+    const on = e.dataset.k === k; e.classList.toggle('reading', on);
+    if(on) e.scrollIntoView({block:'nearest', behavior: reduceMotion ? 'auto' : 'smooth'});
+  });
+}
+function ui(){
+  const t = T[$('#lLang').value] || T.en, playing = state === 'playing';
+  $('#btnPlay').innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
+  $('#btnPlay').classList.toggle('on', playing);
+  $('#btnPlay').setAttribute('aria-label', playing ? 'Pause' : (state === 'paused' ? 'Resume' : 'Listen'));
+  $('#player').classList.toggle('playing', playing);
+  $('#pStatus').textContent = playing ? t.reading : state === 'paused' ? t.paused : (finished ? t.done : t.idle);
+  $('#btnStop').disabled = state === 'idle';
+  $('#btnPlay').disabled = !synth;
+}
+function speakNext(tk){
+  if(tk !== token) return;
+  if(idx >= chunks.length){ state = 'idle'; finished = true; highlight(null); ui(); return; }
+  const c = chunks[idx], lang = $('#lLang').value, u = new SpeechSynthesisUtterance(c.text);
+  u.lang = LANGS[lang].tag; const v = pickVoice(lang); if(v) u.voice = v; u.rate = rate;
+  u.onstart = () => { if(tk === token) highlight(c.k); };
+  u.onend = () => { if(tk !== token) return; idx++; speakNext(tk); };
+  u.onerror = e => {
+    if(tk !== token) return;
+    if(e && (e.error === 'canceled' || e.error === 'interrupted')) return;
+    state = 'idle'; ui(); $('#pStatus').textContent = 'The audio could not play on this device. Try Chrome or Edge.';
+  };
+  synth.speak(u);
+}
+function playPause(){
+  if(!synth || !listenMed) return;
+  if(state === 'playing'){ synth.pause(); state = 'paused'; ui(); return; }
+  if(state === 'paused'){ synth.resume(); state = 'playing'; ui(); return; }
+  synth.cancel(); try{ synth.resume(); }catch(e){}
+  token++; finished = false; idx = 0; state = 'playing';
+  chunks = buildChunks(listenFields || listenMed, $('#lLang').value);
+  stats.listens = (stats.listens || 0) + 1; persist(); renderDash();
+  ui(); speakNext(token);
+}
+function stopSpeech(){
+  token++;
+  if(synth){ try{ synth.cancel(); synth.resume(); }catch(e){} }
+  state = 'idle'; idx = 0; highlight(null); ui();
+}
+async function renderListen(){
+  const med = listenMed, lang = $('#lLang').value, t = T[lang];
+  const myToken = ++renderToken;
+  $('#lTitle').textContent = med.n; $('#lTitle').lang = med.l;
+  const vb = $('#lVerified');
+  vb.className = 'badge ' + (med.v ? 'ok' : 'no'); vb.textContent = med.v ? t.verified(med.v) : t.unverified;
+  $('#lDate').textContent = med.a ? t.updated(fmtDate(med.a, lang)) : '';
+  $('#pLabel').textContent = t.listen;
+  finished = false;
+
+  let fields = med, failed = false;
+  if(lang !== med.l){
+    setMsg('#lTransNote', 'Translating to ' + LANGS[lang].name + '\u2026'); $('#lTransNote').hidden = false;
+    try{ fields = await getDisplayFields(med, lang); }
+    catch(e){ failed = true; fields = med; }
+    if(myToken !== renderToken || listenMed !== med) return; // superseded by a newer selection
+  }
+  listenFields = fields;
+
+  $('#lSub').textContent = fields.g || ''; $('#lSub').hidden = !fields.g;
+  const box = $('#lSections'); box.textContent = '';
+  SECTION_KEYS.forEach(k => {
+    if(!fields[k]) return;
+    const s = el('section', 'info'); s.dataset.k = k;
+    s.appendChild(el('h3', '', t[k]));
+    const p = el('p', '', fields[k]); p.lang = lang; s.appendChild(p); box.appendChild(s);
+  });
+  $('#lDisc').textContent = t.disclaimer;
+
+  if(lang !== med.l && failed){ setMsg('#lTransNote', 'Could not translate to ' + LANGS[lang].name + ' right now (check your internet connection). Showing the original text instead.', 'warn'); $('#lTransNote').hidden = false; }
+  else { $('#lTransNote').hidden = true; setMsg('#lTransNote', ''); }
+
+  updateVoiceNote(); ui();
+}
+function showListen(med){
+  if(current !== 'listen') prevView = current;
+  listenMed = med; stopSpeech();
+  $('#lLang').value = med.l; renderListen(); go('listen');
+}
+$('#btnPlay').addEventListener('click', playPause);
+$('#btnStop').addEventListener('click', () => { stopSpeech(); finished = false; ui(); });
+$('#lLang').addEventListener('change', () => { if(listenMed){ stopSpeech(); renderListen(); } });
+$('#rate').addEventListener('input', e => { rate = parseFloat(e.target.value) || 0.9; $('#rateVal').textContent = rate.toFixed(1) + 'x'; });
+window.addEventListener('pagehide', () => { if(synth) synth.cancel(); });
+
+/* ---------- opening a scanned link ---------- */
+function checkHash(){
+  const code = extractCode(location.hash);
+  if(!code) return false;
+  try{ const med = decodeMed(code); document.body.classList.add('public'); showListen(med); return true; }
+  catch(e){ toast('This QR link could not be opened.'); return false; }
+}
+
+/* ---------- start ---------- */
+if(typeof window.qrcode !== 'function' || typeof window.jsQR !== 'function') $('#libWarn').hidden = false;
+renderDash(); updateMeter(); ui();
+if(!checkHash()) go('dash');
+window.addEventListener('hashchange', checkHash);
+});
+</script>
+</body>
+</html>
